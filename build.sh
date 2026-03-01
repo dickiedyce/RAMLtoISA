@@ -39,7 +39,7 @@ xcodebuild -project RAMLtoISA.xcodeproj \
            2>&1 | tail -20
 
 # Find the built app
-APP_PATH=$(find build -name "RAMLtoISA.app" -type d | head -1)
+APP_PATH=$(find build -name "RAML to ISA.app" -type d | head -1)
 
 if [ -n "$APP_PATH" ]; then
     echo ""
