@@ -1,0 +1,5 @@
+// Copy this file to signing.xcconfig and fill in your values.
+// signing.xcconfig is gitignored and will not be committed.
+CODE_SIGN_IDENTITY = -
+DEVELOPMENT_TEAM =
+CODE_SIGN_STYLE = Automatic

@@ -1,0 +1,24 @@
+# Xcode
+build/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+
+# SPM
+.build/
+.swiftpm/
+SourcePackages/
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Local signing config (contains Team ID)
+signing.xcconfig
+
+# Build artifacts
+*.ipa
+*.dSYM.zip
+*.dSYM

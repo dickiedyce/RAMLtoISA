@@ -1,0 +1,46 @@
+name: RAMLtoISA
+options:
+  bundleIdPrefix: com.ramltoisa
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  SWIFT_VERSION: "5.9"
+
+targets:
+  RAMLtoISA:
+    type: application
+    platform: macOS
+    sources:
+      - RAMLtoISA
+    configFiles:
+      Debug: signing.xcconfig
+      Release: signing.xcconfig
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.ramltoisa.app
+      MARKETING_VERSION: "1.0.0"
+      CURRENT_PROJECT_VERSION: 1
+      INFOPLIST_FILE: RAMLtoISA/Resources/Info.plist
+      CODE_SIGN_ENTITLEMENTS: RAMLtoISA/RAMLtoISA.entitlements
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      PRODUCT_NAME: "RAML to ISA"
+    dependencies:
+      - package: Yams
+      - package: ZIPFoundation
+    postBuildScripts:
+      - script: |
+          echo "Copying app to /Applications..."
+          rm -rf "/Applications/RAML to ISA.app"
+          cp -R "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app" "/Applications/${PRODUCT_NAME}.app"
+          echo "Installed to /Applications/${PRODUCT_NAME}.app"
+        name: "Copy to Applications"
+
+packages:
+  Yams:
+    url: https://github.com/jpsim/Yams
+    from: "5.0.0"
+  ZIPFoundation:
+    url: https://github.com/weichsel/ZIPFoundation
+    from: "0.9.0"
