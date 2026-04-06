@@ -21,6 +21,7 @@ chmod +x build.sh
 ```
 
 This will:
+
 1. Generate the Xcode project from `project.yml`
 2. Resolve SPM dependencies
 3. Build the app
