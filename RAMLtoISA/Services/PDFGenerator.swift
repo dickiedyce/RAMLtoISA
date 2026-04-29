@@ -42,7 +42,7 @@ final class PDFGenerator: NSObject {
             self.timeoutWorkItem = timeout
             DispatchQueue.main.asyncAfter(deadline: .now() + 120, execute: timeout)
 
-            wv.loadHTMLString(html, baseURL: nil)
+            wv.loadHTMLString(html, baseURL: Bundle.main.resourceURL)
         }
     }
 
@@ -113,10 +113,7 @@ final class PDFGenerator: NSObject {
 
 extension PDFGenerator: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        // Allow layout to settle before printing
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            self?.createPDF()
-        }
+        waitForRenderAndCreatePDF()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -125,6 +122,45 @@ extension PDFGenerator: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         finishWithError(error)
+    }
+
+    private func waitForRenderAndCreatePDF(attempt: Int = 0) {
+        guard let webView else {
+            finishWithError(PDFGeneratorError.noWebView)
+            return
+        }
+
+        let maxAttempts = 80 // ~20 seconds at 0.25s interval
+        let readinessScript = """
+        (() => {
+            const readyFlag = window.__mermaidReady === true;
+            const nodes = Array.from(document.querySelectorAll('.mermaid'));
+            const mermaidDone = nodes.length === 0 || nodes.every((n) => n.querySelector('svg'));
+            return readyFlag && mermaidDone;
+        })();
+        """
+
+        webView.evaluateJavaScript(readinessScript) { [weak self] result, _ in
+            guard let self else { return }
+
+            if let isReady = result as? Bool, isReady {
+                // A short extra delay helps avoid occasional clipped diagrams.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                    self?.createPDF()
+                }
+                return
+            }
+
+            if attempt >= maxAttempts {
+                // Fall back to printing even if Mermaid readiness checks fail.
+                self.createPDF()
+                return
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+                self?.waitForRenderAndCreatePDF(attempt: attempt + 1)
+            }
+        }
     }
 }
 

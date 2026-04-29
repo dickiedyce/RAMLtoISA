@@ -16,6 +16,7 @@ final class MarkdownRenderer {
         <style>
         \(cssStyles)
         </style>
+        \(mermaidScript)
         </head>
         <body>
         \(body)
@@ -200,6 +201,47 @@ final class MarkdownRenderer {
 
     // MARK: - CSS
 
+    private static let mermaidScript = """
+    <script src="mermaid.min.js"></script>
+        <script>
+        window.__mermaidReady = false;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const blocks = document.querySelectorAll(".mermaid");
+                if (!blocks.length) {
+                    window.__mermaidReady = true;
+                    return;
+                }
+
+                if (typeof mermaid === "undefined") {
+                    blocks.forEach((block) => {
+                        block.classList.remove("mermaid");
+                        const pre = document.createElement("pre");
+                        const code = document.createElement("code");
+                        code.textContent = block.textContent || "";
+                        pre.appendChild(code);
+                        block.replaceWith(pre);
+                    });
+                    window.__mermaidReady = true;
+                    return;
+                }
+
+                mermaid.initialize({
+                    startOnLoad: false,
+                    securityLevel: "loose",
+                    theme: "default"
+                });
+
+                await mermaid.run({ querySelector: ".mermaid" });
+                window.__mermaidReady = true;
+            } catch (e) {
+                window.__mermaidReady = true;
+            }
+        });
+        </script>
+    """
+
     private static let cssStyles = """
     * {
         box-sizing: border-box;
@@ -216,6 +258,17 @@ final class MarkdownRenderer {
         line-height: 1.6;
         color: #1d1d1f;
         padding: 0;  /* margins handled by NSPrintInfo */
+    }
+
+    .mermaid {
+        margin: 16px 0;
+        text-align: center;
+        page-break-inside: avoid;
+    }
+
+    .mermaid svg {
+        max-width: 100%;
+        height: auto;
     }
 
     h1 {
